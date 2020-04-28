@@ -18,12 +18,13 @@
 
 package org.dromara.soul.web.plugin.dubbo;
 
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.rpc.service.GenericService;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.rpc.service.GenericException;
-import org.apache.dubbo.rpc.service.GenericService;
 import org.dromara.soul.common.constant.Constants;
 import org.dromara.soul.common.dto.MetaData;
 import org.dromara.soul.common.enums.ResultEnum;
@@ -62,8 +63,8 @@ public class DubboProxyService {
     /**
      * Generic invoker object.
      *
-     * @param body            the body
-     * @param metaData        the meta data
+     * @param body     the body
+     * @param metaData the meta data
      * @return the object
      * @throws SoulException the soul exception
      */
@@ -90,16 +91,16 @@ public class DubboProxyService {
             } else {
                 pair = genericParamResolveService.buildParameter(body, metaData.getParameterTypes());
             }
-            CompletableFuture<Object> future= genericService.$invokeAsync(metaData.getMethodName(), pair.getLeft(), pair.getRight());
-            return  Mono.fromFuture(future.thenApply(ret -> {
-                if (Objects.nonNull(ret)) {
-                    exchange.getAttributes().put(Constants.DUBBO_RPC_RESULT,ret);
-                } else {
-                    exchange.getAttributes().put(Constants.DUBBO_RPC_RESULT, Constants.DUBBO_RPC_RESULT_EMPTY);
-                }
-                exchange.getAttributes().put(Constants.CLIENT_RESPONSE_RESULT_TYPE, ResultEnum.SUCCESS.getName());
-                return ret;
-            }));
+            Object ret = genericService.$invoke(metaData.getMethodName(), pair.getLeft(),
+                    pair.getRight());
+            if (Objects.nonNull(ret)) {
+                exchange.getAttributes().put(Constants.DUBBO_RPC_RESULT,ret);
+            } else {
+                exchange.getAttributes().put(Constants.DUBBO_RPC_RESULT, Constants.DUBBO_RPC_RESULT_EMPTY);
+            }
+            exchange.getAttributes().put(Constants.CLIENT_RESPONSE_RESULT_TYPE, ResultEnum.SUCCESS.getName());
+            return Mono.justOrEmpty(ret);
+
         } catch (GenericException e) {
             LOGGER.error("dubbo 泛化调用异常", e);
             throw new SoulException(e.getMessage());

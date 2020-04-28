@@ -1,7 +1,9 @@
 package org.dromara.soul.client.dubbo.spring;
 
+import com.alibaba.dubbo.config.spring.ServiceBean;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.spring.ServiceBean;
+
 import org.dromara.soul.client.common.annotation.SoulClient;
 import org.dromara.soul.client.common.dto.MetaDataDTO;
 import org.dromara.soul.client.common.utils.OkHttpTools;
